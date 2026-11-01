@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#040918">
+  <meta name="description" content="PAUSE — остановись и проверь: помощник по безопасному решению при подозрении на мошенничество.">
+  <title>PAUSE — остановись и проверь</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="grid"></i></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" data-icon="shield"></span>
+      <b>PAUSE</b><span class="brand-sub">прототип</span>
+    </div>
+    <nav class="nav-desktop" aria-label="Разделы">
+      <button class="nav-btn is-active" data-nav="home">Главная</button>
+      <button class="nav-btn" data-nav="check">Проверка</button>
+      <button class="nav-btn" data-nav="dash">Панель ИБ</button>
+    </nav>
+    <div class="status-pill"><span class="dot" id="aiDot"></span><span id="aiPillText">проверка связи…</span></div>
+  </header>
+
+  <main>
+    <section class="view is-active" id="view-home">
+      <div class="hero card">
+        <div class="hero-text">
+          <span class="eyebrow">Проект для хакатона ВТБ</span>
+          <h1>Остановись<br>на секунду.<br><span class="grad">Проверь до клика.</span></h1>
+          <p class="lead">Вставьте сообщение или продиктуйте звонок. PAUSE покажет, что в нём похоже на обман, и подскажет, что делать.</p>
+          <div class="cta">
+            <button class="btn primary" data-go="check"><span data-icon="scan"></span>Проверить сообщение</button>
+            <button class="btn ghost" data-go="check" data-voice="1"><span data-icon="mic"></span>Голосом</button>
+          </div>
+          <div class="chips" id="statusChips"></div>
+        </div>
+        <div class="orb" aria-hidden="true">
+          <i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="sweep"></i>
+          <div class="core"><span data-icon="shield"></span></div>
+        </div>
+      </div>
+
+      <div class="tiles">
+        <button class="tile" id="openSos"><span class="tile-ic red" data-icon="lock"></span><b>Уже назвали код?</b><small>Что делать сейчас</small></button>
+        <a class="tile" href="tel:1000"><span class="tile-ic blue" data-icon="phone"></span><b>Позвонить в банк</b><small>Номер 1000</small></a>
+        <button class="tile" data-go="check"><span class="tile-ic cyan" data-icon="search"></span><b>Проверить текст</b><small>SMS, мессенджер, звонок</small></button>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <div class="card-head"><h3>Журнал проверок</h3><span class="muted" id="journalCount"></span></div>
+          <div id="journal"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Как это работает</h3></div>
+          <ol class="how">
+            <li><span class="num">1</span><div><b>Вы даёте текст</b><p>Вставляете или диктуете. Ваши сообщения мы сами не читаем.</p></div></li>
+            <li><span class="num">2</span><div><b>Сайт ищет признаки обмана</b><p>Просьба назвать код, «безопасный счёт», спешка, подозрительные ссылки.</p></div></li>
+            <li><span class="num">3</span><div><b>Вы видите, что делать</b><p>Не просто «обман или нет», а понятные признаки и совет.</p></div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+    <section class="view" id="view-check">
+      <div class="head">
+        <h2>Проверка на мошенничество</h2>
+        <p class="muted" id="modeText">Вставьте текст или нажмите на микрофон.</p>
+      </div>
+
+      <div class="check-grid">
+        <div class="card input-card">
+          <div class="voice">
+            <button id="micBtn" class="mic" type="button" aria-label="Говорить"><i class="pulse"></i><i class="pulse p2"></i><span id="micIcon" data-icon="mic"></span></button>
+            <div class="voice-side">
+              <div class="waves" id="waves" aria-hidden="true"></div>
+              <div class="mic-label" id="micLabel">Нажмите и говорите</div>
+            </div>
+          </div>
+
+          <div class="live-alert" id="liveAlert" hidden></div>
+
+          <div class="demo-label">Примеры</div>
+          <div class="demo-row" id="demoRow"></div>
+
+          <label class="sr" for="msg">Текст сообщения</label>
+          <textarea id="msg" maxlength="2000" rows="7" placeholder="Вставьте текст SMS, сообщения или расшифровку звонка…"></textarea>
+          <div class="ta-foot"><span id="count">0 / 2000</span><span class="hint">Не вставляйте настоящие пароли и номера карт</span></div>
+
+          <div class="live" id="liveChips" aria-live="polite"></div>
+
+          <div class="row">
+            <button id="checkBtn" class="btn primary big" type="button"><span data-icon="search"></span>Проверить</button>
+            <button id="clearBtn" class="btn ghost" type="button">Очистить</button>
+            <button id="stopDemo" class="btn danger" type="button" hidden><span data-icon="stop"></span>Стоп</button>
+          </div>
+          <label class="tts"><input type="checkbox" id="ttsToggle" checked><span>Озвучивать звонок</span></label>
+        </div>
+
+        <div id="result" class="result-col" aria-live="polite"></div>
+      </div>
+    </section>
+    <section class="view" id="view-dash">
+      <div class="head">
+        <h2><span class="h-ic" data-icon="chart"></span>Панель ИБ</h2>
+        <p class="muted">Статистика ваших проверок. Хранится только в этом браузере.</p>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="two">
+        <div class="card">
+          <div class="card-head"><h3>Найденные признаки</h3></div>
+          <div id="bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Самопроверка правил</h3><span class="muted">наши примеры</span></div>
+          <p class="muted small">Проверяем правила на готовых примерах. Это тест на наших примерах, а не данные из жизни.</p>
+          <button class="btn primary" id="runTest" type="button"><span data-icon="play"></span>Запустить тест</button>
+          <div id="testOut"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Конвейер проверки</h3></div>
+        <div class="pipe" id="pipe"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Приватность и защита</h3></div>
+        <ul class="privacy" id="privacy"></ul>
+        <button class="btn ghost" id="wipe" type="button"><span data-icon="trash"></span>Очистить локальные данные</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      Учебный проект для хакатона. Это не сервис банка. Результат — оценка по тексту, а не гарантия.
+    </footer>
+  </main>
+  <nav class="tabbar" aria-label="Разделы">
+    <button class="tab is-active" data-nav="home"><span data-icon="home"></span>Главная</button>
+    <button class="tab" data-nav="check"><span data-icon="scan"></span>Проверка</button>
+    <button class="tab" data-nav="dash"><span data-icon="chart"></span>Панель ИБ</button>
+  </nav>
+  <div class="modal" id="sos" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sosTitle">
+      <button class="modal-x" id="closeSos" aria-label="Закрыть"><span data-icon="x"></span></button>
+      <h3 id="sosTitle">Уже назвали код? Вот что делать</h3>
+      <ol class="steps">
+        <li>Прекратите разговор и не выполняйте дальнейших просьб.</li>
+        <li>Позвоните в банк по официальному номеру (в приложении ВТБ — 1000) и скажите, что передали код или данные карты.</li>
+        <li>Заблокируйте карту и смените пароль от интернет-банка.</li>
+        <li>Не переводите деньги и ничего не устанавливайте «для защиты».</li>
+        <li>Если деньги списаны — обратитесь в полицию (112).</li>
+      </ol>
+      <a class="btn primary" href="tel:1000"><span data-icon="phone"></span>Позвонить 1000</a>
+      <p class="micro">PAUSE не блокирует карты и ничего не делает в банке.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="guard.js"></script>
+  <script src="config.js"></script>
+  <script src="rules.js"></script>
+  <script src="ai.js"></script>
+  <script src="demo.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
